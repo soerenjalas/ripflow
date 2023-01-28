@@ -8,6 +8,7 @@ def test_pydoocs_connector():
         data = Connector.get_data()
         collected_data.append(data)
     assert len(collected_data) == 10
+    print(data)
 
 if __name__ == "__main__":
     test_pydoocs_connector()
