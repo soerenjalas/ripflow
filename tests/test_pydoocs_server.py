@@ -4,7 +4,8 @@ from middle_layer_server.connectors.sink import STDOUTSinkConnector
 from middle_layer_server.analyzers import BaseAnalyzer
 
 
-source_connector = PydoocsSourceConnector(source_properties=["FLASH.LASER/MOD24.CAM/Input.11.NF/IMAGE_EXT_ZMQ"])
+source_connector = PydoocsSourceConnector(
+    source_properties=["FLASH.LASER/MOD24.CAM/Input.11.NF/IMAGE_EXT_ZMQ"])
 sink_connector = STDOUTSinkConnector()
 analyzer = BaseAnalyzer()
 
