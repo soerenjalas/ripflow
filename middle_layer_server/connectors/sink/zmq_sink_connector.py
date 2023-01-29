@@ -26,6 +26,9 @@ class ZMQSinkConnector(SinkConnector):
         self.socket = context.socket(zmq.PUB)
         self.socket.bind(f"tcp://*:{self.port}")
 
+    def connect_subprocess(self):
+        self.socket.connect(f"tcp://*:{self.port}")
+
     def send(self, data):
         message = self.serializer.serialize(data)
         self.socket.send_json(message)

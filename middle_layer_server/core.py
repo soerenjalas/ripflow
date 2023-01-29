@@ -45,6 +45,7 @@ class PythonMiddleLayerServer(object):
         self.running = False
 
     def process_events(self):
+        self.sink_connector.connect_subprocess()
         while True:
             data = self.queue.get()
             data = self.analyzer.run(data)

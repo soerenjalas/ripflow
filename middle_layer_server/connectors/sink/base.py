@@ -5,6 +5,9 @@ class SinkConnector(object):
     """Base class for source connectors."""
     def initialize(self):
         raise NotImplementedError
+
+    def connect_subprocess(self):
+        raise NotImplementedError
  
     def send(self, data):
         raise NotImplementedError

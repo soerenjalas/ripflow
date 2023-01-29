@@ -12,8 +12,8 @@ A basic middle layer analysis server can look like the following:
 # Define connector for incoming data (here pydoocs zmq)
 source_connector = PydoocsSourceConnector(
     source_properties=["FLASH.LASER/MOD24.CAM/Input.11.NF/IMAGE_EXT_ZMQ"])
-# Define out connector (here print to STDOUT)
-sink_connector = STDOUTSinkConnector()
+# Define output connector
+sink_connector = ZMQSinkConnector(port=1337, serializer=JsonSerializer())
 # Define analysis pipeline
 analyzer = BaseAnalyzer()
 
