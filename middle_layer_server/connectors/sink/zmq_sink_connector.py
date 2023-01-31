@@ -9,7 +9,8 @@ class ZMQSinkConnector(SinkConnector):
     Parameters
     ----------
     port : Int
-        Port of zmq socket
+        Port of zmq socket, additional sender subprocesses will
+        utilize port+n to open their respective sockets
     serializer : Serializer
         Serialization object for outgoing data
     """
@@ -18,18 +19,20 @@ class ZMQSinkConnector(SinkConnector):
         self.port = port
         self.serializer = serializer
         self.socket = None
+        self.context = zmq.Context()
 
-    def initialize(self):
-        """Open zmq PUB socket
+    def connect_subprocess(self, idx: int):
+        """Connect subprocess to sink connector
+
+        Parameters
+        ----------
+        idx : int
+            Identifier of sender subprocess
         """
-        context = zmq.Context()
-        self.socket = context.socket(zmq.PUB)
-        self.socket.bind(f"tcp://*:{self.port}")
+        self.socket = self.context.socket(zmq.PUB)
+        self.socket.bind(f"tcp://*:{self.port+idx}")
 
-    def connect_subprocess(self):
-        self.socket.connect(f"tcp://*:{self.port}")
+    def send(self, message):
+        self.socket.send(message)
 
-    def send(self, data):
-        message = self.serializer.serialize(data)
-        self.socket.send_json(message)
 

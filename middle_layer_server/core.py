@@ -1,7 +1,9 @@
 from .connectors.source import SourceConnector
 from .connectors.sink import SinkConnector
 from .analyzers import BaseAnalyzer
-from multiprocessing import Process, Queue, Event
+from multiprocessing import Process
+import zmq
+import time
 
 
 class PythonMiddleLayerServer(object):
@@ -15,9 +17,6 @@ class PythonMiddleLayerServer(object):
         Connector for outgoing data
     analyzer : BaseAnalyzer
         Analyzer object that processes the incoming data
-    max_queue_size : int, default 10
-        Maximum number of events being process concurrently,
-        event overflow will lead to data loss
     n_workers : int, default 2
         Number of analysis processes
     """
@@ -26,7 +25,6 @@ class PythonMiddleLayerServer(object):
                  source_connector: SourceConnector,
                  sink_connector: SinkConnector = None,
                  analyzer: BaseAnalyzer = None,
-                 max_queue_size: int = 10,
                  n_workers: int = 2,
                  ) -> None:
         """Construct main server object"""
@@ -34,37 +32,19 @@ class PythonMiddleLayerServer(object):
         self.sink_connector = sink_connector
         self.analyzer = analyzer
         # Initialize sink connector
-        sink_connector.initialize()
-        # Initialize event queue
-        self.queue = Queue(maxsize=max_queue_size)
+        # Parameters of comm layer
+        self.worker_socket_address = "ipc://workers"
+        self.sender_socket_address = "ipc://sender"
+        self.sender_sockets = list()
+        self.context = zmq.Context()
         self.n_workers = n_workers
-        self.workers = None
-        self.main_worker = None
-        self.launch_workers()
+        self.n_senders = analyzer.n_outputs
+        # Process registries
+        self.workers = list()
+        self.senders = list()
+        self.main_producer = None
 
         self.running = False
-
-    def process_events(self):
-        self.sink_connector.connect_subprocess()
-        while True:
-            data = self.queue.get()
-            data = self.analyzer.run(data)
-            self.sink_connector.send(data)
-
-    def launch_workers(self):
-        self.workers = [Process(target=self.process_events)
-                        for _ in range(self.n_workers)]
-        for process in self.workers:
-            process.daemon = True
-            process.start()
-
-    def listen(self):
-        """Listen for incoming events."""
-        self.running = True
-        self.source_connector.connect()
-        while self.running:
-            data = self.source_connector.get_data()
-            self.queue.put(data)
 
     def event_loop(self, background=False):
         """Start main event loop
@@ -76,9 +56,79 @@ class PythonMiddleLayerServer(object):
             background. If true will spawn subprocess and continue,
             by default False.
         """
+        self._launch_workers()
+        self._launch_senders()
+        time.sleep(1)
         if not background:
-            self.listen()
+            self._producer_routine()
         else:
-            self.main_worker = Process(target=self.listen)
-            self.main_worker.daemon = True
-            self.main_worker.start()
+            self._launch_producer()
+
+    def _connect_worker(self):
+        """Connect worker IO sockets"""
+        self.worker_data_socket = self.context.socket(zmq.PULL)
+        self.worker_data_socket.connect(self.worker_socket_address)
+        for idx in range(self.n_senders):
+            socket = self.context.socket(zmq.PUSH)
+            socket.connect(self.sender_socket_address + f"_{idx:d}")
+            self.sender_sockets.append(socket)
+
+    def _connect_sender(self, idx: int):
+        """Connect sender to processed data stream"""
+        self.sender_data_socket = self.context.socket(zmq.PULL)
+        self.sender_data_socket.bind(self.sender_socket_address + f"_{idx:d}")
+
+    def _connect_producer(self):
+        self.input_socket = self.context.socket(zmq.PUSH)
+        self.input_socket.bind(self.worker_socket_address)
+
+    def _worker_routine(self):
+        self._connect_worker()
+        while True:
+            data = self.worker_data_socket.recv_pyobj()
+            # print('worker: {}'.format(data[0]['macropulse']))
+            data = self.analyzer.run(data)
+            for idx in range(self.n_senders):
+                prop = data[idx]
+                msg = self.sink_connector.serializer.serialize(prop)
+                self.sender_sockets[idx].send(msg)
+
+    def _sender_routine(self, idx: int):
+        self._connect_sender(idx)
+        self.sink_connector.connect_subprocess(idx)
+        while True:
+            msg = self.sender_data_socket.recv()
+            self.sink_connector.send(msg)
+
+    def _producer_routine(self):
+        """Listen for incoming events."""
+        self.running = True
+        self.source_connector.connect()
+        self._connect_producer()
+        while self.running:
+            data = self.source_connector.get_data()
+            # print('producer: {}'.format(data[0]['macropulse']))
+            self.input_socket.send_pyobj(data)
+
+    def _launch_senders(self):
+        for idx in range(self.n_senders):
+            self.senders.append(
+                Process(target=self._sender_routine, args=(idx,))
+            )
+        for process in self.senders:
+            process.daemon = True
+            process.start()
+
+    def _launch_workers(self):
+        self.workers = [Process(target=self._worker_routine)
+                        for _ in range(self.n_workers)]
+        for process in self.workers:
+            process.daemon = True
+            process.start()
+
+    def _launch_producer(self):
+        self.main_producer = Process(target=self._producer_routine)
+        self.main_producer.daemon = True
+        self.main_producer.start()
+
+    
