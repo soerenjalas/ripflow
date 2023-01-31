@@ -17,5 +17,8 @@ class STDOUTSinkConnector(SinkConnector):
     def initialize(self):
         self.printer = pprint.PrettyPrinter()
 
+    def connect_subprocess(self):
+        pass
+
     def send(self, data):
         self.printer.pprint(data)
