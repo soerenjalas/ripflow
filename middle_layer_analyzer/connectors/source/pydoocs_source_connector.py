@@ -67,6 +67,6 @@ class PydoocsSourceConnector(SourceConnector):
             try:
                 raise TimeoutError("Source connection timed out")
             except TimeoutError as e:
-                self._logger.exception('An error occurred: %s', e)
+                self._logger.exception("An error occurred: %s", e)
                 raise
         return out

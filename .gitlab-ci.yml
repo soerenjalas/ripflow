@@ -1,0 +1,20 @@
+image: python:latest
+
+stages:
+  - test
+  - lint
+
+before_script:
+  - pip install poetry
+  - poetry config virtualenvs.create false
+  - poetry install
+
+Unit Tests:
+  stage: test
+  script:
+    - poetry run pytest tests
+
+Python Code Lint:
+  stage: lint
+  script:
+    - poetry run black .

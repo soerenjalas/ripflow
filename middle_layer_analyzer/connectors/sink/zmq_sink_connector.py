@@ -19,7 +19,7 @@ class ZMQSinkConnector(SinkConnector):
         self.port = port
         self.serializer = serializer
         self.socket = None
-        self.context = zmq.Context()
+        self.context = None
 
     def connect_subprocess(self, idx: int):
         """Connect subprocess to sink connector
@@ -29,11 +29,12 @@ class ZMQSinkConnector(SinkConnector):
         idx : int
             Identifier of sender subprocess
         """
+        self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
         self.socket.bind(f"tcp://*:{self.port+idx}")
-        self._logger.info(f"Sender {idx} connected to ZMQ pub socket on port {self.port+idx}")
+        self._logger.info(
+            f"Sender {idx} connected to ZMQ pub socket on port {self.port+idx}"
+        )
 
     def send(self, message):
         self.socket.send(message)
-
-
