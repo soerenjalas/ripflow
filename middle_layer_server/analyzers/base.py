@@ -1,7 +1,21 @@
 import time
+import logging
 
 
 class BaseAnalyzer(object):
+    def __init__(self):
+        self._logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = logging.getLogger(self.__class__.__name__)
+        return self._logger
+
+    @logger.setter
+    def logger(self, logger):
+        self._logger = logger
+
     def run(self, data):
         return data
 

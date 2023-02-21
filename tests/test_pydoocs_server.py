@@ -1,12 +1,12 @@
 from middle_layer_server.core import PythonMiddleLayerServer
 from middle_layer_server.connectors.source import PydoocsSourceConnector
-from middle_layer_server.connectors.sink import ZMQSinkConnector, STDOUTSinkConnector
+from middle_layer_server.connectors.sink import ZMQSinkConnector
 from middle_layer_server.serializers import JsonSerializer
 from middle_layer_server.analyzers import ImageProjector
 import time
 import zmq
 import json
-#from pprint import pprint as print
+# from pprint import pprint as print
 
 sink_socket = 1337
 
@@ -31,11 +31,8 @@ def test_server():
         source_properties=["FLASH.LASER/HIDRAPP1.CAM/PA_OUT.34.FF/IMAGE_EXT_ZMQ"])
     sink_connector = ZMQSinkConnector(port=sink_socket,
                                     serializer=JsonSerializer())
-    #sink_connector = STDOUTSinkConnector()
 
     analyzer = ImageProjector(fake_load=0.2)
-
-
     server = PythonMiddleLayerServer(
         source_connector=source_connector,
         sink_connector=sink_connector,
