@@ -1,3 +1,4 @@
+import logging
 from .connectors.source import SourceConnector
 from .connectors.sink import SinkConnector
 from .analyzers import BaseAnalyzer
@@ -19,6 +20,10 @@ class PythonMiddleLayerServer(object):
         Analyzer object that processes the incoming data
     n_workers : int, default 2
         Number of analysis processes
+    log_file_path : str, default "server.log"
+        Path to log file
+    log_level : str, default 'INFO'
+        Logging level options: 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
     """
 
     def __init__(self,
@@ -26,8 +31,27 @@ class PythonMiddleLayerServer(object):
                  sink_connector: SinkConnector = None,
                  analyzer: BaseAnalyzer = None,
                  n_workers: int = 2,
+                 log_file_path: str = "server.log",
+                 log_level: str='INFO'
                  ) -> None:
         """Construct main server object"""
+        # Map string log level to logging constant
+        log_level = getattr(logging, log_level.upper())
+        # Create logger
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(log_level)
+        # Create file handler and set level to log_level
+        file_handler = logging.FileHandler(log_file_path)
+        file_handler.setLevel(log_level)
+        # Create formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # Add formatter to file handler
+        file_handler.setFormatter(formatter)
+        # Add file handler to logger
+        self.logger.addHandler(file_handler)
+        # Log a test message
+        self.logger.debug('Logger initialized')
+        # Initialize connectors
         self.source_connector = source_connector
         self.sink_connector = sink_connector
         self.analyzer = analyzer
@@ -82,11 +106,11 @@ class PythonMiddleLayerServer(object):
         self.input_socket = self.context.socket(zmq.PUSH)
         self.input_socket.bind(self.worker_socket_address)
 
-    def _worker_routine(self):
+    def _worker_routine(self, worker_id: int = 0):
         self._connect_worker()
+        self.logger.info(f'Worker {worker_id} launched')
         while True:
             data = self.worker_data_socket.recv_pyobj()
-            # print('worker: {}'.format(data[0]['macropulse']))
             data = self.analyzer.run(data)
             for idx in range(self.n_senders):
                 prop = data[idx]
@@ -96,6 +120,7 @@ class PythonMiddleLayerServer(object):
     def _sender_routine(self, idx: int):
         self._connect_sender(idx)
         self.sink_connector.connect_subprocess(idx)
+        self.logger.info(f'Sender {idx} launched')
         while True:
             msg = self.sender_data_socket.recv()
             self.sink_connector.send(msg)
@@ -107,7 +132,6 @@ class PythonMiddleLayerServer(object):
         self._connect_producer()
         while self.running:
             data = self.source_connector.get_data()
-            # print('producer: {}'.format(data[0]['macropulse']))
             self.input_socket.send_pyobj(data)
 
     def _launch_senders(self):
@@ -120,8 +144,8 @@ class PythonMiddleLayerServer(object):
             process.start()
 
     def _launch_workers(self):
-        self.workers = [Process(target=self._worker_routine)
-                        for _ in range(self.n_workers)]
+        self.workers = [Process(target=self._worker_routine, args=(idx,)
+                        for idx in range(self.n_workers)]
         for process in self.workers:
             process.daemon = True
             process.start()
@@ -130,5 +154,6 @@ class PythonMiddleLayerServer(object):
         self.main_producer = Process(target=self._producer_routine)
         self.main_producer.daemon = True
         self.main_producer.start()
+        self.logger.info('Producer launched')
 
-    
+
