@@ -1,11 +1,12 @@
 import setuptools
+from middle_layer_server import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="middle_layer_server",
-    version="0.0.1",
+    version=__version__,
     author="Soeren Jalas",
     author_email="soeren.jalas@desy.de",
     description="A package to run the middle layer analysis tasks",

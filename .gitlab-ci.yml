@@ -5,7 +5,7 @@ release:
   stage: release
   image: python:latest
   script:
-    - VERSION=$(python -c "import setup; print(setup.version)")
+    - export VERSION=$(python -c "from middle_layer_server import __version__; print(__version__)")
     - git tag -a $VERSION -m "Release $VERSION"
     - git push --tags
     - gitlab-cli release create --name "$VERSION" --tag-name "$VERSION" --description "Release $VERSION"
