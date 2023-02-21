@@ -11,11 +11,11 @@ class Serializer(object):
 
 class JsonSerializer(Serializer):
     """Simple Json string serializer"""
-    
+
     def serialize(self, data):
         """Serialize data."""
         for key, item in data.items():
             if isinstance(item, np.ndarray):
                 # convert array to list
                 data[key] = item.tolist()
-        return json.dumps(data).encode('utf-8')
+        return json.dumps(data).encode("utf-8")

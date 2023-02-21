@@ -1,6 +1,8 @@
+import pprint
 import logging
 
-class SourceConnector(object):
+
+class SinkConnector(object):
     """Base class for source connectors."""
 
     def __init__(self):
@@ -16,8 +18,22 @@ class SourceConnector(object):
     def logger(self, logger):
         self._logger = logger
 
-    def connect(self):
+    def initialize(self):
         raise NotImplementedError
 
-    def get_data(self):
+    def connect_subprocess(self):
         raise NotImplementedError
+
+    def send(self, data):
+        raise NotImplementedError
+
+
+class STDOUTSinkConnector(SinkConnector):
+    def initialize(self):
+        self.printer = pprint.PrettyPrinter()
+
+    def connect_subprocess(self):
+        pass
+
+    def send(self, data):
+        self.printer.pprint(data)
