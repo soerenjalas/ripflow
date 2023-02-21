@@ -31,6 +31,7 @@ class ZMQSinkConnector(SinkConnector):
         """
         self.socket = self.context.socket(zmq.PUB)
         self.socket.bind(f"tcp://*:{self.port+idx}")
+        self._logger.info(f"Sender {idx} connected to ZMQ pub socket on port {self.port+idx}")
 
     def send(self, message):
         self.socket.send(message)
