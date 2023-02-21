@@ -152,7 +152,7 @@ class PythonMiddleLayerServer(object):
             process.start()
 
     def _launch_workers(self):
-        self.workers = [Process(target=self._worker_routine, args=(idx,)
+        self.workers = [Process(target=self._worker_routine, args=(idx,))
                         for idx in range(self.n_workers)]
         for process in self.workers:
             process.daemon = True
