@@ -18,3 +18,15 @@ Python Code Lint:
   stage: lint
   script:
     - poetry run black .
+
+Build:
+  stage: build
+  needs: [Unit Tests]
+  script:
+    - echo "This is the build stage"
+    - poetry config repositories.gitlab https://gitlab.desy.de/api/v4/projects/5555/packages/pypi
+    - echo "Repository gitlab configured ..."
+    - poetry build
+    - echo "Build done ..."
+    - poetry publish --repository gitlab -u gitlab+ci+release+token -p 42BTg_yJJ3SsSyRV4QFx
+    - echo "Publishing done!"
