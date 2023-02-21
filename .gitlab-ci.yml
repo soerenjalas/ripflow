@@ -3,6 +3,7 @@ stages:
 
 release:
   stage: release
+  image: python:latest
   script:
     - VERSION=$(python -c "import setup; print(setup.version)")
     - git tag -a $VERSION -m "Release $VERSION"
