@@ -29,11 +29,13 @@ class PydoocsSourceConnector(SourceConnector):
         pd.connect(self.source_properties, cycles=self.cycles)
         self.connected = True
         time.sleep(0.1)
+        self._logger.info(f"Connected to DOOCS ZMQ channels {self.source_properties}")
 
     def disconnect(self) -> None:
         """Disconnect sockets."""
         pd.disconnect()
         self.connected = False
+        self._logger.info(f"Disconnected from DOOCS ZMQ channels")
 
     def get_data(self):
         """Read incoming data.
@@ -61,5 +63,10 @@ class PydoocsSourceConnector(SourceConnector):
             out = pd.getdata()
             dt = time.time() - t0
         if dt > timeout:
-            raise TimeoutError("Source connection timed out")
+            # Catch the TimeoutError and log it
+            try:
+                raise TimeoutError("Source connection timed out")
+            except TimeoutError as e:
+                self._logger.exception('An error occurred: %s', e)
+                raise
         return out

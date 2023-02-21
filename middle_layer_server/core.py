@@ -53,9 +53,17 @@ class PythonMiddleLayerServer(object):
         self.logger.debug('Logger initialized')
         # Initialize connectors
         self.source_connector = source_connector
-        self.sink_connector = sink_connector
-        self.analyzer = analyzer
+        # Set logger for source connector
+        self.source_connector.logger = self.logger
         # Initialize sink connector
+        self.sink_connector = sink_connector
+        # Set logger for sink connector
+        self.sink_connector.logger = self.logger
+        self.analyzer = analyzer
+        # Set logger for analyzer
+        self.analyzer.logger = self.logger
+
+
         # Parameters of comm layer
         self.worker_socket_address = "ipc://workers"
         self.sender_socket_address = "ipc://sender"
