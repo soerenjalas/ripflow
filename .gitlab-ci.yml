@@ -1,0 +1,12 @@
+stages:
+  - release
+
+release:
+  stage: release
+  script:
+    - VERSION=$(python -c "import setup; print(setup.version)")
+    - git tag -a $VERSION -m "Release $VERSION"
+    - git push --tags
+    - gitlab-cli release create --name "$VERSION" --tag-name "$VERSION" --description "Release $VERSION"
+  only:
+    - main

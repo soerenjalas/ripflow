@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="middle_layer_server",
-    version="0.1.0",
+    version="0.0.1",
     author="Soeren Jalas",
     author_email="soeren.jalas@desy.de",
     description="A package to run the middle layer analysis tasks",
