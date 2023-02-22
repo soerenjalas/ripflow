@@ -19,6 +19,7 @@ Python Code Lint:
   stage: lint
   script:
     - poetry run black .
+    - poetry run mypy middle_layer_analyzer
 
 Release:
   stage: release

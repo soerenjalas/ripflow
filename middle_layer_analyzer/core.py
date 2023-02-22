@@ -1,4 +1,5 @@
 import logging
+from typing import Optional, List
 from .connectors.source import SourceConnector
 from .connectors.sink import SinkConnector
 from .analyzers import BaseAnalyzer
@@ -29,8 +30,8 @@ class MiddleLayerAnalyzer(object):
     def __init__(
         self,
         source_connector: SourceConnector,
-        sink_connector: SinkConnector = None,
-        analyzer: BaseAnalyzer = None,
+        sink_connector: SinkConnector,
+        analyzer: BaseAnalyzer,
         n_workers: int = 2,
         log_file_path: str = "server.log",
         log_level: str = "INFO",
@@ -109,10 +110,10 @@ class Producer(object):
 
     def __init__(self, server: MiddleLayerAnalyzer) -> None:
         """Construct producer object"""
-        self.logger = server.logger
-        self.source_connector = server.source_connector
-        self.worker_socket_address = server.worker_socket_address
-        self.process = None
+        self.logger: logging.Logger = server.logger
+        self.source_connector: SourceConnector = server.source_connector
+        self.worker_socket_address: str = server.worker_socket_address
+        self.process: Optional[Process] = None
 
     def launch(self) -> None:
         self.process = Process(target=self._producer_routine, daemon=True)
@@ -155,8 +156,8 @@ class Worker(object):
         self.sender_socket_address = server.sender_socket_address
         self.worker_socket_address = server.worker_socket_address
         self.n_senders = server.n_senders
-        self.sender_sockets = list()
-        self.process = None
+        self.sender_sockets: List[zmq.Socket] = list()
+        self.process: Optional[Process] = None
 
     def launch(self) -> None:
         """
@@ -217,7 +218,7 @@ class Sender(object):
         self.idx = idx
         self.sink_connector = server.sink_connector
         self.sender_socket_address = server.sender_socket_address
-        self.process = None
+        self.process: Optional[Process] = None
 
     def launch(self) -> None:
         """Launch the sender process."""

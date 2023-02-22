@@ -1,17 +1,18 @@
 import pprint
 import logging
+from typing import Optional
+from ...serializers import Serializer
 
 
 class SinkConnector(object):
     """Base class for source connectors."""
 
-    def __init__(self):
-        self._logger = None
+    def __init__(self, serializer: Serializer):
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self.serializer: Serializer = serializer
 
     @property
     def logger(self):
-        if self._logger is None:
-            self._logger = logging.getLogger(self.__class__.__name__)
         return self._logger
 
     @logger.setter
@@ -21,7 +22,7 @@ class SinkConnector(object):
     def initialize(self):
         raise NotImplementedError
 
-    def connect_subprocess(self):
+    def connect_subprocess(self, idx: int):
         raise NotImplementedError
 
     def send(self, data):
