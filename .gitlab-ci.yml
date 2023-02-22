@@ -18,7 +18,7 @@ Unit Tests:
 Python Code Lint:
   stage: lint
   script:
-    - poetry run black .
+    - poetry run black --check .
     - poetry run mypy middle_layer_analyzer
 
 Release:
@@ -34,4 +34,3 @@ Release:
     - echo "Build done ..."
     - poetry publish --repository gitlab -u gitlab+ci+release+token -p 42BTg_yJJ3SsSyRV4QFx
     - echo "Publishing done!"
-

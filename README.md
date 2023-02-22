@@ -4,7 +4,7 @@
 
 This repository provides a framework that shall act as a communication layer between DOOCS and Python.
 
-The framework is meant to work in combination with a DOOCS gateway server that reads data on defined zmq sockes and publishes them as native DOOCS properties. 
+The framework is meant to work in combination with a DOOCS gateway server that reads data on defined zmq sockes and publishes them as native DOOCS properties.
 
 This repository contains the Python classes to build a middle layer application that reads data from various sources (e.g. DOOCS zmq properties) and applies arbitrary analysis pipelines onto the data using overlapping worker threads. The processed data is then published via zmq or other programmable sink connectors.
 
