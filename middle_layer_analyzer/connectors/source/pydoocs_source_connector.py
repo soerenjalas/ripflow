@@ -1,5 +1,8 @@
 from .base import SourceConnector
-import pydoocs as pd
+try:
+    import pydoocs as pd # type: ignore
+except ImportError:
+    raise ImportError("pydoocs is not installed. Please install pydoocs or add it to your PYTHONPATH")
 import time
 import numpy as np
 

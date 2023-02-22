@@ -1,6 +1,7 @@
 import zmq
 from .base import SinkConnector
 from ...serializers import Serializer
+from typing import Optional
 
 
 class ZMQSinkConnector(SinkConnector):
@@ -18,8 +19,8 @@ class ZMQSinkConnector(SinkConnector):
     def __init__(self, port: int, serializer: Serializer) -> None:
         self.port = port
         self.serializer = serializer
-        self.socket = None
-        self.context = None
+        self.socket: Optional[zmq.Socket] = None
+        self.context: Optional[zmq.Context] = None
 
     def connect_subprocess(self, idx: int):
         """Connect subprocess to sink connector
