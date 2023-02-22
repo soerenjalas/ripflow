@@ -6,25 +6,7 @@ from io import BytesIO
 from middle_layer_analyzer.serializers import JsonSerializer, AvroSerializer
 
 
-class TestJsonSerializer(unittest.TestCase):
-    def test_serialize(self):
-        serializer = JsonSerializer()
-
-        data = {
-            "a": 1,
-            "b": "hello",
-            "c": np.array([1, 2, 3]),
-            "d": {"e": np.array([4, 5, 6]), "f": "world"},
-        }
-
-        expected_result = b'{"a": 1, "b": "hello", "c": [1, 2, 3], "d": {"e": [4, 5, 6], "f": "world"}}'
-
-        result = serializer.serialize(data)
-
-        self.assertEqual(result, expected_result)
-
-
-class TestAvroSerializer(unittest.TestCase):
+class TestSerializers(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.avro_schema = """
@@ -42,9 +24,7 @@ class TestAvroSerializer(unittest.TestCase):
             ]
         }
         """
-
-    def test_serialize_with_numpy(self):
-        data = {
+        cls.data = {
             "data": np.array([1.0, 2.0, 3.0]),
             "type": "A_FLOAT",
             "timestamp": 1645633217.123456,
@@ -52,6 +32,9 @@ class TestAvroSerializer(unittest.TestCase):
             "miscellaneous": {"key": "value"},
             "name": "test",
         }
+
+    def test_serialize_avro(self):
+        data = self.data.copy()
 
         serializer = AvroSerializer(self.avro_schema)
         serialized_data = serializer.serialize(data)
@@ -65,3 +48,10 @@ class TestAvroSerializer(unittest.TestCase):
         # Convert numpy array to list to compare with original data
         data["data"] = data["data"].tolist()
         self.assertEqual(decoded_data, data)
+
+    def test_serialize(self):
+        serializer = JsonSerializer()
+        data = self.data.copy()
+        expected_result = b'{"data": [1.0, 2.0, 3.0], "type": "A_FLOAT", "timestamp": 1645633217.123456, "macropulse": 12345, "miscellaneous": {"key": "value"}, "name": "test"}'
+        result = serializer.serialize(data)
+        self.assertEqual(result, expected_result)
