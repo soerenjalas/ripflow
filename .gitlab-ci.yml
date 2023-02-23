@@ -4,6 +4,7 @@ stages:
   - test
   - lint
   - release
+  - deploy
 
 before_script:
   - pip install poetry
@@ -18,8 +19,8 @@ Unit Tests:
 Python Code Lint:
   stage: lint
   script:
-    - poetry run black .
-    - poetry run mypy middle_layer_analyzer
+    - poetry run black --check .
+    - poetry run mypy --ignore-missing-imports middle_layer_analyzer
 
 Release:
   stage: release
@@ -35,3 +36,12 @@ Release:
     - poetry publish --repository gitlab -u gitlab+ci+release+token -p 42BTg_yJJ3SsSyRV4QFx
     - echo "Publishing done!"
 
+pages:
+  stage: deploy
+  script:
+    - poetry run mkdocs build --site-dir public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_TAG
