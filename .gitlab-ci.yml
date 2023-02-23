@@ -20,7 +20,7 @@ Python Code Lint:
   stage: lint
   script:
     - poetry run black --check .
-    - poetry run mypy --ignore-missing-imports middle_layer_analyzer
+    - poetry run mypy --ignore-missing-imports ripflow
 
 Release:
   stage: release

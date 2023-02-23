@@ -1,4 +1,4 @@
-site_name: Middle Layer Analyzer Documentation
+site_name: ripflow Documentation
 site_author: Soeren Jalas
 repo_url: https://gitlab.desy.de/mls/kaldera-electrons/python-doocs-middlelayer
 theme:
