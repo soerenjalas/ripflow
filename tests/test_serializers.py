@@ -3,7 +3,7 @@ import numpy as np
 import avro.schema
 from avro.io import BinaryDecoder
 from io import BytesIO
-from middle_layer_analyzer.serializers import JsonSerializer, AvroSerializer
+from ripflow.serializers import JsonSerializer, AvroSerializer
 
 
 class TestSerializers(unittest.TestCase):

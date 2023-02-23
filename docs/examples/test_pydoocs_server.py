@@ -1,8 +1,8 @@
-from middle_layer_analyzer.core import MiddleLayerAnalyzer
-from middle_layer_analyzer.connectors.source import PydoocsSourceConnector
-from middle_layer_analyzer.connectors.sink import ZMQSinkConnector
-from middle_layer_analyzer.serializers import JsonSerializer
-from middle_layer_analyzer.analyzers import ImageProjector
+from ripflow.core import MiddleLayerAnalyzer
+from ripflow.connectors.source import PydoocsSourceConnector
+from ripflow.connectors.sink import ZMQSinkConnector
+from ripflow.serializers import JsonSerializer
+from ripflow.analyzers import ImageProjector
 import time
 import zmq
 import json
