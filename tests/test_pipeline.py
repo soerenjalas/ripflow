@@ -36,11 +36,11 @@ def subscribe(socket_port, n):
 
 
 def test_server():
-    from middle_layer_analyzer.core import MiddleLayerAnalyzer
-    from middle_layer_analyzer.connectors.source import TestSourceConnector
-    from middle_layer_analyzer.connectors.sink import ZMQSinkConnector
-    from middle_layer_analyzer.serializers import JsonSerializer
-    from middle_layer_analyzer.analyzers import TestAnalyzer
+    from ripflow.core import MiddleLayerAnalyzer
+    from ripflow.connectors.source import TestSourceConnector
+    from ripflow.connectors.sink import ZMQSinkConnector
+    from ripflow.serializers import JsonSerializer
+    from ripflow.analyzers import TestAnalyzer
 
     source_connector = TestSourceConnector(test_sequence)
     sink_connector = ZMQSinkConnector(port=sink_socket, serializer=JsonSerializer())
