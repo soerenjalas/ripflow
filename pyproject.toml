@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "middle-layer-analyzer"
-version = "0.1.2"
+version = "0.1.3"
 description = "Python package to insert analysis pipelines into data streams"
 authors = ["Soeren Jalas <soeren.jalas@desy.de>"]
 repository = "https://gitlab.desy.de/mls/kaldera-electrons/python-doocs-middlelayer"
