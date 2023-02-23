@@ -2,22 +2,12 @@ import time
 import zmq
 import json
 import random
-
-# from pprint import pprint as print
-
-sink_socket = 1337
-
-test_sequence = list()
-for i in range(10):
-    data = {
-        "data": random.random(),
-        "type": "FLOAT",
-        "timestamp": time.time() + i,
-        "macropulse": i,
-        "miscellaneous": {},
-        "name": "test",
-    }
-    test_sequence.append(data)
+import unittest
+from ripflow.core import MiddleLayerAnalyzer
+from ripflow.connectors.source import TestSourceConnector as SourceConnector
+from ripflow.connectors.sink import ZMQSinkConnector
+from ripflow.serializers import JsonSerializer
+from ripflow.analyzers import TestAnalyzer as Analyzer
 
 
 def subscribe(socket_port, n):
@@ -35,31 +25,36 @@ def subscribe(socket_port, n):
     return messages
 
 
-def test_server():
-    from ripflow.core import MiddleLayerAnalyzer
-    from ripflow.connectors.source import TestSourceConnector
-    from ripflow.connectors.sink import ZMQSinkConnector
-    from ripflow.serializers import JsonSerializer
-    from ripflow.analyzers import TestAnalyzer
+class TestMiddleLayerAnalyzer(unittest.TestCase):
+    def setUp(self):
+        self.sink_socket = 1337
+        self.test_sequence = list()
+        for i in range(10):
+            data = {
+                "data": random.random(),
+                "type": "FLOAT",
+                "timestamp": time.time() + i,
+                "macropulse": i,
+                "miscellaneous": {},
+                "name": "test",
+            }
+            self.test_sequence.append(data)
+        self.source_connector = SourceConnector(self.test_sequence)
+        self.sink_connector = ZMQSinkConnector(
+            port=self.sink_socket, serializer=JsonSerializer()
+        )
+        self.analyzer = Analyzer(fake_load=0.05)
+        self.server = MiddleLayerAnalyzer(
+            source_connector=self.source_connector,
+            sink_connector=self.sink_connector,
+            analyzer=self.analyzer,
+            n_workers=1,
+        )
 
-    source_connector = TestSourceConnector(test_sequence)
-    sink_connector = ZMQSinkConnector(port=sink_socket, serializer=JsonSerializer())
-
-    analyzer = TestAnalyzer(fake_load=0.05)
-    server = MiddleLayerAnalyzer(
-        source_connector=source_connector,
-        sink_connector=sink_connector,
-        analyzer=analyzer,
-        n_workers=1,
-    )
-
-    server.event_loop(background=True)
-    print("Waiting for data to be processed")
-    out = subscribe(sink_socket, 10)
-    assert len(out) == 10
-    assert out == test_sequence
-    return
+    def test_event_loop(self):
+        self.server.event_loop(background=True)
+        self.assertEqual(subscribe(self.sink_socket, 10), self.test_sequence)
 
 
 if __name__ == "__main__":
-    test_server()
+    unittest.main()
