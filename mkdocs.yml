@@ -3,6 +3,8 @@ site_author: Soeren Jalas
 repo_url: https://gitlab.desy.de/mls/kaldera-electrons/python-doocs-middlelayer
 theme:
   name: material
+  logo: assets/ripflow_logo_w.svg
+  favicon: assets/ripflow_logo_k.svg
   features:
     # - announce.dismiss
     - content.action.edit
