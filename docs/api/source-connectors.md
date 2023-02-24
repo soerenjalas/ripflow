@@ -4,6 +4,7 @@ Source connectors deal with the incoming data from the source system. They are r
 The source connector API is designed to be flexible and allow for easy implementation of different types of data sources.
 
 ## SourceConnector
+`ripflow.connectors.source.SourceConnector`
 
 This object is an abstract class that defines the basis for all source connectors. It provides the following methods:
 
@@ -37,6 +38,7 @@ class JsonFileSourceConnector(SourceConnector):
 ```
 
 ## PydoocsSourceConnector
+`ripflow.connectors.source.PydoocsSourceConnector`
 
 This source connector is used to read data from the [DOOCS](https://doocs.desy.de/) system. It utilizes the DOOCS zmq interface to read data from zmq capable DOOCS properties. The connector is configured using the following parameters:
 
