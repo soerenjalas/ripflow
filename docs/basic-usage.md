@@ -35,4 +35,4 @@ In the example above, the incoming image data stream is pulled from a DOOCS serv
 
 Internally the server uses ZeroMQ to communicate between the processes that handle grabbing, analyzing and sending the data. The general architecture looks like this:
 
-![ripflow architecture](assets/ripflow_architecture.svg)
+![ripflow architecture](assets/ripflow_architecture.png)
