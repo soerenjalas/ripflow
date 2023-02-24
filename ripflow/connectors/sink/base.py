@@ -25,12 +25,13 @@ class SinkConnector(object):
     def connect_subprocess(self, idx: int):
         raise NotImplementedError
 
-    def send(self, data):
+    def send(self, data: bytes):
         raise NotImplementedError
 
 
 class STDOUTSinkConnector(SinkConnector):
-    def initialize(self):
+    def __init__(self, serializer: Serializer):
+        super().__init__(serializer)
         self.printer = pprint.PrettyPrinter()
 
     def connect_subprocess(self):

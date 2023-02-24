@@ -73,3 +73,4 @@ nav:
   - API reference:
     - MiddleLayerAnalyzer: api/middle-layer-analyzer.md
     - Source Connectors: api/source-connectors.md
+    - Sink Connectors: api/sink-connectors.md
