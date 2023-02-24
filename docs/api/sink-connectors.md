@@ -12,16 +12,21 @@ This object is an abstract class that defines the basis for all sink connectors.
 
 The `SinkConnector` requires a `Serializer` object that defines the transformation of the internal data format into the messages that are sent out by the `SinkConnector`. The `Serializer` object is provided as the `serializer` argument to the `SinkConnector` constructor.
 
-Custom sink connectors should inherit from this class and implement the `connect_subprocess()` and `send_data(data)` methods.
+Custom sink connectors should inherit from this class and implement the `connect_subprocess()` and `send()` methods.
 
 Example:
 
 ```python
 from typing import List, Dict
 from ripflow.connectors.sink import SinkConnector
+from ripflow.serializers import Serializer
 import time
 
-class FileSinkConnector(sinkConnector):
+class FileSinkConnector(SinkConnector):
+    def __init__(self, serializer: Serializer, filename: str) -> None:
+        self.filename = filename
+        self.serializer = serializer
+
     def connect_subprocess(self) -> None:
         self.file = open(self.filename, "r")
 

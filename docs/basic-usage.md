@@ -30,3 +30,9 @@ server = PythonMiddleLayerServer(
 # Run event loop. Can be run blocking in main process or send to a child
 server.event_loop(background=False)
 ```
+
+In the example above, the incoming image data stream is pulled from a DOOCS server via a `PydoocsSourceConnector`. The data is distributed in round-robin fashion between 10 workers, which apply the `ImageProjector` analysis pipeline to the data. The result is then serialized as a json string and published via a ZMQ PUB socket.
+
+Internally the server uses ZeroMQ to communicate between the processes that handle grabbing, analyzing and sending the data. The general architecture looks like this:
+
+![ripflow architecture](assets/ripflow_architecture.svg)
