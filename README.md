@@ -1,4 +1,6 @@
-# Python middle layer analysis framework
+
+
+# <img src="docs/assets/ripflow_logo_k.svg" width="60"> ripflow Python middle layer analysis framework
 
 ## Introduction
 
