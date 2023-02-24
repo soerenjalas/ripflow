@@ -25,7 +25,7 @@ class SinkConnector(object):
     def connect_subprocess(self, idx: int):
         raise NotImplementedError
 
-    def send(self, data: dict):
+    def send(self, data: bytes):
         raise NotImplementedError
 
 
