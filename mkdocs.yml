@@ -72,3 +72,4 @@ nav:
     - Basic Usage: basic-usage.md
   - API reference:
     - MiddleLayerAnalyzer: api/middle-layer-analyzer.md
+    - Source Connectors: api/source-connectors.md
