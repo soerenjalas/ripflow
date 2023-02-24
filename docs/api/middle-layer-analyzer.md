@@ -1,4 +1,5 @@
-# MiddleLayerAnalyzer Class
+# MiddleLayerAnalyzer
+`ripflow.middle_layer_analyzer.MiddleLayerAnalyzer`
 
 The `MiddleLayerAnalyzer` class is a Python object that provides an interface for analyzing incoming data from a `SourceConnector` and processing it using a provided Analyzer object. The processed data is then sent to an external system via a `SinkConnector`. The class is designed to work in parallel using multiple worker processes and is responsible for managing worker and sender processes using ZeroMQ sockets.
 
