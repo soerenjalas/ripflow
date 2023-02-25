@@ -34,7 +34,7 @@ theme:
     code: JetBrains Mono
     text: Open Sans
   icon:
-    repo: fontawesome/brands/gitlab
+    repo: fontawesome/brands/github
 # Extensions
 markdown_extensions:
   - abbr
