@@ -1,0 +1,41 @@
+name: Publish PyPI release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      POETRY_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.3.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-root --no-dev
+
+      - name: Set PyPI token
+        run: |
+          poetry config pypi-token.pypi ${{ env.POETRY_PYPI_TOKEN }}
+
+      - name: Publish PyPI release
+        run: |
+          TAG=$(git describe --tags --abbrev=0)
+          poetry version ${TAG#v}
+          poetry publish --build

@@ -3,7 +3,7 @@ name = "ripflow"
 version = "0.2.0"
 description = "Python package to insert analysis pipelines into data streams"
 authors = ["Soeren Jalas <soeren.jalas@desy.de>"]
-repository = "https://gitlab.desy.de/mls/kaldera-electrons/python-doocs-middlelayer"
+repository = "https://github.com/soerenjalas/ripflow"
 readme = "README.md"
 packages = [{include = "ripflow"}]
 
