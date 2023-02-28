@@ -20,7 +20,7 @@ pip install ripflow
 ### with poetry
 You can also add ripflow to a project that is managed with poetry:
 ```bash
-poetry add --source ripflow-repo ripflow
+poetry add ripflow
 ```
 
 ### from source
