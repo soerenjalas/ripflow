@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ripflow"
-version = "0.2.1"
+version = "0.2.2"
 description = "Python package to insert analysis pipelines into data streams"
 authors = ["Soeren Jalas <soeren.jalas@desy.de>"]
 repository = "https://github.com/soerenjalas/ripflow"
