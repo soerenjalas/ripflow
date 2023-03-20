@@ -23,12 +23,15 @@ class PydoocsSourceConnector(SourceConnector):
 
     """
 
-    def __init__(self, source_properties: list, timeout: float = 2) -> None:
+    def __init__(
+        self, source_properties: list, timeout: float = 2, wait: float = 1e-3
+    ) -> None:
         """Construct PydoocsSourceConnector object."""
         self.source_properties = source_properties
         self.cycles = int(1e6)
         self.connected = False
         self.timeout = timeout
+        self.wait = wait
 
     def connect(self) -> None:
         """Connect DOOCS zmq sockets."""
@@ -68,6 +71,7 @@ class PydoocsSourceConnector(SourceConnector):
         while (not out) and (dt < timeout):
             out = pd.getdata()
             dt = time.time() - t0
+            time.sleep(self.wait)
         if dt > timeout:
             # Catch the TimeoutError and log it
             try:
