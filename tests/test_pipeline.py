@@ -3,7 +3,7 @@ import zmq
 import json
 import random
 import unittest
-from ripflow.core import MiddleLayerAnalyzer
+from ripflow import Ripflow
 from ripflow.connectors.source import TestSourceConnector as SourceConnector
 from ripflow.connectors.sink import ZMQSinkConnector
 from ripflow.serializers import JsonSerializer
@@ -63,7 +63,7 @@ class TestMiddleLayerAnalyzer(unittest.TestCase):
             port=self.sink_socket, serializer=JsonSerializer()
         )
         self.analyzer = Analyzer(fake_load=0.05)
-        self.server = MiddleLayerAnalyzer(
+        self.server = Ripflow(
             source_connector=self.source_connector,
             sink_connector=self.sink_connector,
             analyzer=self.analyzer,

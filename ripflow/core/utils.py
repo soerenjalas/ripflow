@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-import logging
-import zmq
 from multiprocessing import Process
+import zmq
+import logging
 
 
 class CommsFactory(ABC):
