@@ -134,20 +134,17 @@ class Ripflow(object):
         self.supervisor = Supervisor(
             logger=self.logger
         )  # Supervisor for managing processes
-        self.supervisor.add_process(self.producer, self.restart_policy)
-        for worker in self.workers:
-            self.supervisor.add_process(worker, self.restart_policy)
+        # Add processes to supervisor, will be started in order
         for sender in self.senders:
             self.supervisor.add_process(sender, self.restart_policy)
+        for worker in self.workers:
+            self.supervisor.add_process(worker, self.restart_policy)
+        self.supervisor.add_process(self.producer, self.restart_policy)
 
-    def event_loop(self, background=False):
-        """Start main event loop
+    def event_loop(self):
+        """Start main event loop"""
+        self.supervisor.start_all_processes(delay=0.3)
+        self.supervisor.monitor_processes()
 
-        Parameters
-        ----------
-        background : bool, optional
-            Whether to launch the main loop in the
-            background. If true will spawn subprocess and continue,
-            by default False.
-        """
-        self.supervisor.start_all_processes()
+    def stop(self):
+        self.supervisor.stop()

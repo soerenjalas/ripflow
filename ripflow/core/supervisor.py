@@ -3,7 +3,7 @@ from ripflow.core.utils import Child
 
 import time
 from datetime import datetime, timedelta
-from threading import Thread
+from threading import Thread, Event
 
 
 class RestartPolicy:
@@ -40,14 +40,16 @@ class Supervisor(object):
             "last_restart": None,
             "reset_timer": datetime.now(),
             "thread": None,  # Placeholder for the monitoring thread
+            "stop_event": Event(),  # Event to signal the monitoring thread to stop
         }
 
-    def start_all_processes(self):
+    def start_all_processes(self, delay: int = 0):
         """
         Starts all managed child processes.
         """
         for process in self._processes.keys():
             self.start_process(process)
+            time.sleep(delay)
 
     def start_process(self, process: Child):
         """
@@ -85,11 +87,11 @@ class Supervisor(object):
             process.launch()  # type: ignore
             process_info["restart_count"] += 1
             process_info["last_restart"] = datetime.now()
-            print(
+            self.logger.info(
                 f"Process {process} restarted. Count: {process_info['restart_count']}"
             )
         else:
-            print(f"Process {process} reached maximum restart limit.")
+            self.logger.info(f"Process {process} reached maximum restart limit.")
 
     def stop_process(self, process: Child):
         """
@@ -98,6 +100,7 @@ class Supervisor(object):
         process.stop()  # type: ignore
         if process in self._processes:
             process_info = self._processes[process]
+            process_info["stop_event"].set()  # Signal monitoring thread to stop
             if process_info["thread"]:
                 process_info["thread"].join()  # Wait for monitoring thread to finish
             del self._processes[process]
@@ -106,7 +109,8 @@ class Supervisor(object):
         """
         Monitors a process and restarts it if it stops unexpectedly.
         """
-        while True:
+        stop_event = self._processes[process]["stop_event"]
+        while not stop_event.is_set():
             if not process.is_alive():  # type: ignore
                 self.logger.info(f"Supervisor: Process {process} stopped unexpectedly.")
                 self.restart_process(process)
@@ -124,3 +128,12 @@ class Supervisor(object):
                 self.logger.info(
                     f"Supervisor: Monitoring thread for process {process} started."
                 )
+
+    def stop(self):
+        """
+        Stops all managed processes.
+        """
+        # Create a list of keys to iterate over
+        processes_to_stop = list(self._processes.keys())
+        for process in processes_to_stop:
+            self.stop_process(process)

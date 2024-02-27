@@ -27,19 +27,36 @@ class SourceConnector(object):
 
 
 class TestSourceConnector(SourceConnector):
-    """Test source connector."""
+    """Test source connector that can simulate a crash."""
 
-    def __init__(self, data_sequence):
+    def __init__(self, data_sequence, crash_point=None):
+        """
+        Initialize the BaseConnector object.
+
+        Args:
+            data_sequence (list): The data sequence to be processed.
+            crash_point (int, optional): The crash point index. Defaults to None.
+        """
         self.data_sequence = data_sequence
+        self.crash_point = crash_point
         self.iterator = 0
 
     def connect(self):
-        self.logger.info("Connecting to test source")
+        # Assuming there's a logger setup in the parent class
+        self.logger.info("Connecting to crashable test source")
 
     def get_data(self):
+        # Simulate a crash at the defined point
+        if self.crash_point is not None and self.iterator == self.crash_point:
+            raise Exception("Simulated crash in TestSourceConnector")
+
+        # Proceed with normal data retrieval
         while self.iterator >= len(self.data_sequence):
-            time.sleep(1)
+            time.sleep(1)  # Sleep to simulate waiting for more data in a real scenario
         data = self.data_sequence[self.iterator]
         self.iterator += 1
-        time.sleep(0.05)
+        time.sleep(0.05)  # Simulate some delay in data retrieval
         return data
+
+    def reset(self):
+        self.iterator = 0

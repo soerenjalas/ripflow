@@ -5,6 +5,7 @@ from ripflow.connectors.source import SourceConnector
 from .utils import CommsFactory
 from .utils import Child
 import zmq
+import time
 
 
 import logging
@@ -89,12 +90,19 @@ class Worker(Child):
         self._connect_worker()
         self.logger.info(f"Worker {self.worker_id} launched")
         while True:
-            data = self.input_socket.recv_pyobj()
-            data = self.analyzer.run(data)
-            for idx in range(self.n_senders):
-                prop = data[idx]
-                msg = self.sink_connector.serializer.serialize(prop)
-                self.output_sockets[idx].send(msg)
+            try:
+                data = self.input_socket.recv_pyobj()
+                data = self.analyzer.run(data)
+                for idx in range(self.n_senders):
+                    prop = data[idx]
+                    msg = self.sink_connector.serializer.serialize(prop)
+                    self.output_sockets[idx].send(msg)
+            except Exception as e:
+                self.logger.error(f"Error in worker main_routine: {e}")
+                self.comms_factory.cleanup(
+                    self.context, self.output_sockets + [self.input_socket]
+                )
+                break
 
     def _connect_worker(self):
         self.input_socket = self.comms_factory.create_socket(
