@@ -10,18 +10,37 @@ from ripflow.serializers import JsonSerializer
 from ripflow.analyzers import TestAnalyzer as Analyzer
 
 
-def subscribe(socket_port, n):
+def subscribe(socket_port, n, timeout=5000):
+    """
+    Subscribe to n messages with a timeout.
+
+    :param socket_port: Port to connect to.
+    :param n: Number of messages to receive.
+    :param timeout: Timeout in milliseconds.
+    :return: List of received messages.
+    """
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect(f"tcp://127.0.0.1:{socket_port}")
     socket.setsockopt(zmq.SUBSCRIBE, b"")
-    messages = list()
-    t0 = time.time()
-    for i in range(n):
-        message = socket.recv().decode("utf-8")
-        messages.append(json.loads(message))
-        if time.time() - t0 > n * 1.1:
-            raise TimeoutError()
+
+    poller = zmq.Poller()
+    poller.register(socket, zmq.POLLIN)
+
+    messages = []
+    start_time = time.time()
+
+    while len(messages) < n:
+        elapsed_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        if elapsed_time > timeout:
+            raise TimeoutError("Subscription timed out waiting for messages.")
+
+        socks = dict(poller.poll(timeout - elapsed_time))
+        if socks.get(socket) == zmq.POLLIN:
+            msg = socket.recv().decode("utf-8")
+            messages.append(json.loads(msg))
+    socket.close()
+    context.term()
     return messages
 
 
@@ -53,7 +72,8 @@ class TestMiddleLayerAnalyzer(unittest.TestCase):
 
     def test_event_loop(self):
         self.server.event_loop(background=True)
-        self.assertEqual(subscribe(self.sink_socket, 10), self.test_sequence)
+        received = subscribe(self.sink_socket, 10)
+        self.assertEqual(received, self.test_sequence)
 
 
 if __name__ == "__main__":
