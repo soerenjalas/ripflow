@@ -10,41 +10,52 @@ from ripflow.serializers import JsonSerializer
 from ripflow.analyzers import TestAnalyzer as Analyzer
 
 
-def subscribe(socket_port, n, timeout=5000):
-    """
-    Subscribe to n messages with a timeout.
+class ZMQSubscriber:
+    def __init__(self, socket_port):
+        """
+        Initialize the ZMQ Subscriber with the given port.
 
-    :param socket_port: Port to connect to.
-    :param n: Number of messages to receive.
-    :param timeout: Timeout in milliseconds.
-    :return: List of received messages.
-    """
-    context = zmq.Context()
-    socket = context.socket(zmq.SUB)
-    socket.connect(f"tcp://127.0.0.1:{socket_port}")
-    socket.setsockopt(zmq.SUBSCRIBE, b"")
+        :param socket_port: Port to connect to.
+        """
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket_port = socket_port
+        self.poller = zmq.Poller()
 
-    poller = zmq.Poller()
-    poller.register(socket, zmq.POLLIN)
+    def connect(self):
+        """
+        Connects to the specified port and prepares the socket for receiving messages.
+        """
+        self.socket.connect(f"tcp://127.0.0.1:{self.socket_port}")
+        self.socket.setsockopt(zmq.SUBSCRIBE, b"")
+        self.poller.register(self.socket, zmq.POLLIN)
+        print(f"Connected to tcp://127.0.0.1:{self.socket_port}")
 
-    messages = []
-    start_time = time.time()
+    def receive_messages(self, n, timeout=10000):
+        """
+        Receives up to n messages with a specified timeout.
 
-    while len(messages) < n:
-        elapsed_time = (time.time() - start_time) * 1000  # Convert to milliseconds
-        if elapsed_time > timeout:
-            raise TimeoutError("Subscription timed out waiting for messages.")
+        :param n: Number of messages to receive.
+        :param timeout: Timeout in milliseconds.
+        :return: List of received messages.
+        """
+        messages = []
+        start_time = time.time()
 
-        socks = dict(poller.poll(timeout - elapsed_time))
-        if socks.get(socket) == zmq.POLLIN:
-            msg = socket.recv().decode("utf-8")
-            messages.append(json.loads(msg))
-    socket.close()
-    context.term()
-    return messages
+        while len(messages) < n:
+            elapsed_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+            if elapsed_time > timeout:
+                break
+
+            socks = dict(self.poller.poll(timeout - elapsed_time))
+            if socks.get(self.socket) == zmq.POLLIN:
+                msg = self.socket.recv().decode("utf-8")
+                messages.append(json.loads(msg))
+
+        return messages
 
 
-class TestMiddleLayerAnalyzer(unittest.TestCase):
+class TestRipflow(unittest.TestCase):
     def setUp(self):
         self.sink_socket = 1337
         self.test_sequence = list()
@@ -69,11 +80,44 @@ class TestMiddleLayerAnalyzer(unittest.TestCase):
             analyzer=self.analyzer,
             n_workers=1,
         )
+        self.tester = ZMQSubscriber(self.sink_socket)
+        self.tester.connect()
+
+    def tearDown(self):
+        self.server.stop()
+        self.tester.socket.close()
+        self.tester.context.term()
 
     def test_event_loop(self):
-        self.server.event_loop(background=True)
-        received = subscribe(self.sink_socket, 10)
+        self.server.event_loop()
+        received = self.tester.receive_messages(n=10, timeout=10000)
         self.assertEqual(received, self.test_sequence)
+
+    def test_event_loop_with_worker_crash(self):
+        expected_crash_point = 5
+        self.analyzer.crash_after = expected_crash_point
+        self.server.event_loop()
+        time.sleep(0.3)
+
+        received_messages = self.tester.receive_messages(n=10, timeout=10000)
+        if received_messages:
+            received_macropulses = [
+                msg["macropulse"] for msg in received_messages if "macropulse" in msg
+            ]
+            print("Received macropulse values:", received_macropulses)
+
+            # Find the first macropulse value after the expected crash point, accounting for potential loss
+            post_crash_macropulses = [
+                mp for mp in received_macropulses if mp > expected_crash_point
+            ]
+
+            # Ensure there's evidence of post-crash processing
+            self.assertTrue(
+                post_crash_macropulses,
+                "No messages received post-crash, indicating possible failure in recovery.",
+            )
+        else:
+            self.fail("No messages received, indicating a failure in the system.")
 
 
 if __name__ == "__main__":

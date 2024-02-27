@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from multiprocessing import Process
 import zmq
 import logging
+from typing import List
 
 
 class CommsFactory(ABC):
@@ -11,6 +12,10 @@ class CommsFactory(ABC):
 
     @abstractmethod
     def create_socket(self) -> None:
+        pass
+
+    @abstractmethod
+    def cleanup(self, context, sockets) -> None:
         pass
 
 
@@ -46,6 +51,11 @@ class ZMQFactory(CommsFactory):
         if connect_address:
             socket.connect(connect_address)
         return socket
+
+    def cleanup(self, context: zmq.Context, sockets: List[zmq.Socket]) -> None:
+        for socket in sockets:
+            socket.close()
+        context.term()
 
 
 class ProcessMetaclass(type):
