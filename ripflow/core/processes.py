@@ -1,6 +1,6 @@
 from ripflow.analyzers import BaseAnalyzer
 from ripflow.connectors.sink import SinkConnector
-from typing import List
+from typing import List, Optional
 from ripflow.connectors.source import SourceConnector
 from .utils import CommsFactory
 from .utils import Child
@@ -33,7 +33,7 @@ class Producer(Child):
     def main_routine(self):
         """Listen for incoming events."""
         self.context = self.comms_factory.create_context()
-        self.source_connector.connect()
+        self.input_socket = self.source_connector.connect()
         self._connect_producer()
         while True:
             try:
@@ -44,9 +44,8 @@ class Producer(Child):
                 break
 
     def _connect_producer(self):
-        self.input_socket = self.comms_factory.create_socket(
-            self.context, **self.comms_config
-        )
+        socket = self.comms_factory.create_socket(self.context, **self.comms_config)
+        return socket
 
 
 class Worker(Child):

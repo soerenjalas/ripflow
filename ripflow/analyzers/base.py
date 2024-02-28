@@ -1,9 +1,10 @@
 import time
-from typing import Optional
+from typing import Optional, Any, List
 import logging
+from abc import ABC, abstractmethod, abstractproperty
 
 
-class BaseAnalyzer(object):
+class BaseAnalyzer(ABC):
     def __init__(self):
         self._logger = None
 
@@ -17,12 +18,13 @@ class BaseAnalyzer(object):
     def logger(self, logger):
         self._logger = logger
 
-    def run(self, data):
-        return data
+    @abstractmethod
+    def run(self, data) -> List[Any]:
+        pass
 
-    @property
-    def n_outputs(self):
-        return NotImplementedError
+    @abstractproperty
+    def n_outputs(self) -> Any:
+        pass
 
 
 class TestAnalyzer(BaseAnalyzer):
