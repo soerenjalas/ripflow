@@ -57,6 +57,7 @@ class ZMQSubscriber:
 
 class TestRipflow(unittest.TestCase):
     def setUp(self):
+        print("Setting up")
         self.sink_socket = 1337
         self.test_sequence = list()
         for i in range(10):
@@ -84,9 +85,13 @@ class TestRipflow(unittest.TestCase):
         self.tester.connect()
 
     def tearDown(self):
+        print("Tearing down")
         self.server.stop()
         self.tester.socket.close()
         self.tester.context.term()
+        print("pause")
+        time.sleep(5)
+        print("pause done")
 
     def test_event_loop(self):
         self.server.event_loop()
@@ -100,11 +105,14 @@ class TestRipflow(unittest.TestCase):
         time.sleep(0.3)
 
         received_messages = self.tester.receive_messages(n=10, timeout=10000)
+        print(
+            "Received messages:",
+            [received_message["macropulse"] for received_message in received_messages],
+        )
         if received_messages:
             received_macropulses = [
                 msg["macropulse"] for msg in received_messages if "macropulse" in msg
             ]
-            print("Received macropulse values:", received_macropulses)
 
             # Find the first macropulse value after the expected crash point, accounting for potential loss
             post_crash_macropulses = [
