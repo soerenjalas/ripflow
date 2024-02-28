@@ -1,5 +1,6 @@
 from ripflow.core.utils import Child
-
+import logging
+from typing import Dict
 
 import time
 from datetime import datetime, timedelta
@@ -26,8 +27,10 @@ class RestartPolicy:
 
 
 class Supervisor(object):
-    def __init__(self, logger=None):
-        self._processes = {}  # Stores Child processes with their policies and metadata
+    def __init__(self, logger: logging.Logger):
+        self._processes: Dict[
+            Child, Dict
+        ] = {}  # Stores Child processes with their policies and metadata
         self.logger = logger
 
     def add_process(self, process: Child, policy: RestartPolicy):
@@ -43,7 +46,7 @@ class Supervisor(object):
             "stop_event": Event(),  # Event to signal the monitoring thread to stop
         }
 
-    def start_all_processes(self, delay: int = 0):
+    def start_all_processes(self, delay: float = 0):
         """
         Starts all managed child processes.
         """
@@ -60,7 +63,7 @@ class Supervisor(object):
             process.launch()  # type: ignore
             self.logger.info(f"Supervisor: Process {process} started.")
         else:
-            self.logger(f"Supervisor: Process {process} is already running.")
+            self.logger.info(f"Supervisor: Process {process} is already running.")
 
     def _reset_restart_count(self, process: Child):
         """

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from multiprocessing import Process
 import zmq
 import logging
-from typing import List
+from typing import List, Any
 
 
 class CommsFactory(ABC):
@@ -11,7 +11,7 @@ class CommsFactory(ABC):
         pass
 
     @abstractmethod
-    def create_socket(self) -> None:
+    def create_socket(self, context, **kwargs) -> Any:
         pass
 
     @abstractmethod
