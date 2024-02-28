@@ -5,8 +5,6 @@ from ripflow.connectors.source import SourceConnector
 from .utils import CommsFactory
 from .utils import Child
 import zmq
-import time
-
 
 import logging
 
