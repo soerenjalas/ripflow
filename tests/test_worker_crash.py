@@ -8,7 +8,7 @@ from ripflow.connectors.source import TestSourceConnector as SourceConnector
 from ripflow.connectors.sink import ZMQSinkConnector
 from ripflow.serializers import JsonSerializer
 from ripflow.analyzers import TestAnalyzer as Analyzer
-from typing import List
+from typing import List, Dict, Any
 
 
 class ZMQSubscriber:
@@ -40,7 +40,7 @@ class ZMQSubscriber:
         :param timeout: Timeout in milliseconds.
         :return: List of received messages.
         """
-        messages: List[str] = []
+        messages: List[Dict[str, Any]] = []
         start_time = time.time()
 
         while len(messages) < n:
