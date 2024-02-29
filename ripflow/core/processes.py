@@ -1,6 +1,6 @@
 from ripflow.analyzers import BaseAnalyzer
 from ripflow.connectors.sink import SinkConnector
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from ripflow.connectors.source import SourceConnector
 from .utils import CommsFactory
 from .utils import Child
@@ -22,7 +22,7 @@ class Producer(Child):
         self,
         logger: logging.Logger,
         comms_factory: CommsFactory,
-        comms_config: dict,
+        comms_config: Dict[str, Any],
         source_connector: SourceConnector,
     ) -> None:
         """Construct producer object"""
@@ -53,8 +53,8 @@ class Worker(Child):
         self,
         logger: logging.Logger,
         comms_factory: CommsFactory,
-        input_comms_config: dict,
-        output_comms_config: dict,
+        input_comms_config: Dict[str, Any],
+        output_comms_config: Dict[str, Any],
         analyzer: BaseAnalyzer,
         sink_connector: SinkConnector,
         n_senders: int,
@@ -148,7 +148,7 @@ class Sender(Child):
         self,
         logger: logging.Logger,
         comms_factory: CommsFactory,
-        comms_config: dict,
+        comms_config: Dict[str, Any],
         idx: int,
         sink_connector: SinkConnector,
     ) -> None:
