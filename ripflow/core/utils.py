@@ -7,7 +7,7 @@ from typing import List, Any
 
 class CommsFactory(ABC):
     @abstractmethod
-    def create_context(self) -> None:
+    def create_context(self) -> Any:
         pass
 
     @abstractmethod
