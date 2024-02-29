@@ -28,9 +28,9 @@ class RestartPolicy:
 
 class Supervisor(object):
     def __init__(self, logger: logging.Logger):
-        self._processes: Dict[
-            Child, Dict
-        ] = {}  # Stores Child processes with their policies and metadata
+        self._processes: Dict[Child, Dict] = (
+            {}
+        )  # Stores Child processes with their policies and metadata
         self.logger = logger
 
     def add_process(self, process: Child, policy: RestartPolicy):
