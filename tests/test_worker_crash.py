@@ -12,7 +12,7 @@ from typing import List
 
 
 class ZMQSubscriber:
-    def __init__(self, socket_port: int):
+    def __init__(self, socket_port):
         """
         Initialize the ZMQ Subscriber with the given port.
 
@@ -89,10 +89,34 @@ class TestRipflow(unittest.TestCase):
         self.tester.socket.close()
         self.tester.context.term()
 
-    def test_event_loop(self):
+    def test_event_loop_with_worker_crash(self):
+        expected_crash_point = 5
+        self.analyzer.crash_after = expected_crash_point
         self.server.event_loop()
-        received = self.tester.receive_messages(n=10, timeout=10000)
-        self.assertEqual(received, self.test_sequence)
+        time.sleep(0.3)
+
+        received_messages = self.tester.receive_messages(n=10, timeout=10000)
+        print(
+            "Received messages:",
+            [received_message["macropulse"] for received_message in received_messages],
+        )
+        if received_messages:
+            received_macropulses = [
+                msg["macropulse"] for msg in received_messages if "macropulse" in msg
+            ]
+
+            # Find the first macropulse value after the expected crash point, accounting for potential loss
+            post_crash_macropulses = [
+                mp for mp in received_macropulses if mp > expected_crash_point
+            ]
+
+            # Ensure there's evidence of post-crash processing
+            self.assertTrue(
+                post_crash_macropulses,
+                "No messages received post-crash, indicating possible failure in recovery.",
+            )
+        else:
+            self.fail("No messages received, indicating a failure in the system.")
 
 
 if __name__ == "__main__":

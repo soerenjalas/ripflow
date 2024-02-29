@@ -33,8 +33,8 @@ class Producer(Child):
     def main_routine(self):
         """Listen for incoming events."""
         self.context = self.comms_factory.create_context()
-        self.input_socket = self.source_connector.connect()
-        self._connect_producer()
+        self.source_connector.connect()
+        self.input_socket = self._connect_producer()
         while True:
             try:
                 data = self.source_connector.get_data()
