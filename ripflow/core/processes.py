@@ -171,8 +171,13 @@ class Sender(Child):
         self.sink_connector.connect_subprocess(self.idx)
         self.logger.info(f"Sender {self.idx} launched")
         while True:
-            msg = self.input_socket.recv()
-            self.sink_connector.send(msg)
+            try:
+                msg = self.input_socket.recv()
+                self.sink_connector.send(msg)
+            except Exception as e:
+                self.logger.error(f"Error in sender main_routine: {e}")
+                self.comms_factory.cleanup(self.context, [self.input_socket])
+                break
 
     def _connect_sender(self):
         """Connect sender to processed data stream"""
